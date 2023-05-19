@@ -1,0 +1,108 @@
+#Statystyczna analiza danych
+#Witkowski Jakub
+#166733
+
+#ładowanie potrzebnych pakietów
+library(readxl)
+library(dplyr)
+library(writexl)
+#install.packages("moments")
+library(moments)
+#install.packages("data.table")
+library(data.table)
+library(tidyr)
+library(tidyverse)
+
+#załadowanie danych do ramki danych
+dane<-(read_excel("C:/Users/Kuba/Desktop/studia/Semestr 4/Statystyczna analiza danych/Projekt/dane.xlsx"))
+
+#obliczanie parametrów opisowych
+średnia_dlugosci_wypadku<-mean(dane$Distance.mi.) #średnia
+mediana_dlugosci_wypadku<-median(dane$Distance.mi.) #mediana
+odch_stand_dlugosci_wypadku<-sd(dane$Distance.mi., na.rm=TRUE) #odchylenie standardowe
+kwartyl_dlugosci_wypadku<-quantile(dane$Distance.mi.) #kwantyle 
+rozstep_miedzykwartylowy_dlugosci_wypadku<-IQR(dane$Distance.mi.) #rozstęp międzykwartylowy
+wariancja_dlugosci_wypadku<-var(dane$Distance.mi.) #wariancja
+moment_cent_dlugosci_wypadku<-moment(dane$Distance.mi., central=TRUE) #moment centralny
+przedzial_zmiennosci_dlugosci_wypadku<-range(dane$Distance.mi.)  #przedziały zmienności
+kurtoza_dlugosci_wypadku<-kurtosis(dane$Distance.mi.) #kurtoza
+wsp_skos_dlugosci_wypadku<-skewness(dane$Distance.mi.) #współczynnik skośności
+
+#tworzenie 2 kolumn do ramki danych
+Parametr<-c("Średnia", "Mediana", "Odchylenie standardowe",
+           "Kwartyl 0%","25%", "50%", "75%","100%", "Rozstęp miedzykwartylowy", "Wariancja",
+           "Moment centralny", "Przedział zmienności Min", "Max" , "Kurtoza", "Współczynnik skośności")
+Wynik<-c(średnia_dlugosci_wypadku, mediana_dlugosci_wypadku, 
+         odch_stand_dlugosci_wypadku, kwartyl_dlugosci_wypadku,
+         rozstep_miedzykwartylowy_dlugosci_wypadku, wariancja_dlugosci_wypadku,
+         moment_cent_dlugosci_wypadku,przedzial_zmiennosci_dlugosci_wypadku,
+         kurtoza_dlugosci_wypadku, wsp_skos_dlugosci_wypadku)
+#ramka danych zawierające parametry opisowe
+parametry_opisowe_dlugosci_wypadku<-data.frame(Parametr, Wynik=format(Wynik, scientific=FALSE))
+
+#tworzenie histogramu temperatur
+hist(dane$Temperature.F., main="Tempartura w dniu wypadku", xlab="Temperatura w stopniach fahrenheita",
+     ylab="Ilość wystąpień",breaks = 100,xlim=c(-15,130),col=c("slateblue1", "slateblue2", "slateblue3", "slateblue4"))
+
+
+
+df<-data.frame(dane$Start_Time)
+#rozdzielanie kolumny na pojedyncze kolumny
+df<-separate(df, dane.Start_Time, c("rok", "dzień", "miesiąc", "czas"),"-")
+#zliczanie ilości wystąpień w kolumnie
+lata<-df$rok
+lata<-table(lata)
+a<-lata[names(lata)==2016]
+b<-lata[names(lata)==2017]
+c<-lata[names(lata)==2018]
+d<-lata[names(lata)==2019]
+e<-lata[names(lata)==2020]
+f<-lata[names(lata)==2021]
+Rok<-c("2016", "2017", "2018", "2019", "2020", "2021")
+Ilość<-c(a,b,c,d,e,f)
+ilosc_wypadkow_w_roku<-data.frame(Rok, Ilość)
+
+#wykres pudełkowy ilości wypadków w danych latach
+ggplot(ilosc_wypadkow_w_roku, aes(x=Rok, y=Ilość, group=1))+geom_boxplot()+coord_flip()
+boxplot(ilosc_wypadkow_w_roku$Ilość)
+#wykres dystrybuanty
+plot(ecdf(ilosc_wypadkow_w_roku$Ilość), main="Dystrybuanta ilości wypadków")
+#wykres liniowy
+plot(ilosc_wypadkow_w_roku$Rok,ilosc_wypadkow_w_roku$Ilość, type="b", 
+     main="Ilość wypadków w danym roku", xlab="Rok", ylab="Ilość")
+#wykres kołowy
+stany<-dane$State
+Stan<-as.data.frame(table(stany))
+pie(Stan$Freq, Stan$stany, main="Wykres kołowy wypadków dla każdego stanu")
+
+#parametry opisowe ilości wypadków
+srednia_ilosci_wypadkow<-mean(ilosc_wypadkow_w_roku$Ilość)
+mediana_ilosci_wypadkow<-median(ilosc_wypadkow_w_roku$Ilość)
+odch_stand_ilosci_wypadkow<-sd(ilosc_wypadkow_w_roku$Ilość, na.rm=TRUE)
+kwartyl_ilosci_wypadkow<-quantile(ilosc_wypadkow_w_roku$Ilość)
+rozstep_miedzykwartylowy_ilosci_wypadkow<-IQR(ilosc_wypadkow_w_roku$Ilość)
+wariancja_ilosci_wypadkow<-var(ilosc_wypadkow_w_roku$Ilość)
+moment_cent_ilosci_wypadkow<-moment(ilosc_wypadkow_w_roku$Ilość, central=TRUE)
+przedzial_zmiennosci_ilosci_wypadkow<-range(ilosc_wypadkow_w_roku$Ilość)
+kurtoza_ilosci_wypadkow<-kurtosis(ilosc_wypadkow_w_roku$Ilość)
+wsp_skos_ilosci_wypadkow<-skewness(ilosc_wypadkow_w_roku$Ilość)
+
+Parametr2<-c("Średnia", "Mediana", "Odchylenie standardowe",
+            "Kwartyl 0%","25%", "50%", "75%","100%", "Rozstęp miedzykwartylowy", "Wariancja",
+            "Moment centralny", "Przedział zmienności Min", "Max" , "Kurtoza", "Współczynnik skośności")
+
+Wynik2<-c(srednia_ilosci_wypadkow, mediana_ilosci_wypadkow, odch_stand_ilosci_wypadkow,
+          kwartyl_ilosci_wypadkow, rozstep_miedzykwartylowy_ilosci_wypadkow,
+          wariancja_ilosci_wypadkow, moment_cent_ilosci_wypadkow, przedzial_zmiennosci_ilosci_wypadkow,
+          kurtoza_ilosci_wypadkow, wsp_skos_ilosci_wypadkow)
+
+parametry_opisowe_ilosci_wypadkow<-data.frame(Parametr2, Wynik2=format(Wynik2, scientific=FALSE))
+
+#Weryfikacja hipotez statystycznych
+x<-ilosc_wypadkow_w_roku$Ilość
+mean(x)
+t.test(x, mu=500000)
+
+y<-dane$Temperature.F.
+mean(y)
+t.test(y, mu=20)
